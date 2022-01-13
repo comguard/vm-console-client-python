@@ -8,6 +8,8 @@ import logging
 import sys
 from datetime import datetime, timedelta
 
+max_age = 30
+
 config = rapid7vmconsole.Configuration(name='Rapid7')
 config.username = ''
 config.password = ''
@@ -46,6 +48,6 @@ for i in range(pages):
         last_scanned_date = last_scanned_date.replace('Z', '')
         last_scanned_obj = datetime.strptime(last_scanned_date, '%y-%m-%d %H:%M:%S')
         asset_age = datetime.now() - last_scanned_obj
-        if asset_age.days > 29:
+        if asset_age.days > max_age:
             print("Asset ID: %s; Hostname: %s; IP Address: %s; Last Scan: %s" % (a.id, a.host_name, a.ip, a.history[-1]._date))
             asset_api.delete_asset(a.id)
