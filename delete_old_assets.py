@@ -13,7 +13,7 @@ max_age = 30
 config = rapid7vmconsole.Configuration(name='Rapid7')
 config.username = ''
 config.password = ''
-config.host = ''
+config.host = '' # example - https://localhost:3780
 config.verify_ssl = False
 config.assert_hostname = False
 config.proxy = None
@@ -39,10 +39,13 @@ client.default_headers['Authorization'] = "Basic %s" % auth
 asset_api = rapid7vmconsole.AssetApi(client)
 
 size = 30
-pages = 3
+lastPage = False
+curPage = 0
 
-for i in range(pages):
-    assets = asset_api.get_assets(size=size, page=i)
+while(not lastPage):
+    assets = asset_api.get_assets(size=size, page=curPage)
+    if len(assets.resources) < size:
+        lastPage = True
     for a in assets.resources:
         last_scanned_date = a.history[-1]._date[2:].split('.', 1)[0].replace('T', ' ')
         last_scanned_date = last_scanned_date.replace('Z', '')
@@ -51,3 +54,4 @@ for i in range(pages):
         if asset_age.days > max_age:
             print("Asset ID: %s; Hostname: %s; IP Address: %s; Last Scan: %s" % (a.id, a.host_name, a.ip, a.history[-1]._date))
             asset_api.delete_asset(a.id)
+    curPage += 1
