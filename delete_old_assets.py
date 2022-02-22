@@ -9,6 +9,9 @@ import sys
 from datetime import datetime, timedelta
 
 max_age = 30
+# Specify ID of Site, from which you want to delete assets
+# If left None, assets from all sites will be deleted (older than max_age)
+site_id = None
 
 config = rapid7vmconsole.Configuration(name='Rapid7')
 config.username = ''
@@ -37,13 +40,18 @@ auth = base64.b64encode(auth.encode('ascii')).decode()
 client = rapid7vmconsole.ApiClient(configuration=config)
 client.default_headers['Authorization'] = "Basic %s" % auth
 asset_api = rapid7vmconsole.AssetApi(client)
+site_api = rapid7vmconsole.SiteApi(client)
 
 size = 30
 lastPage = False
 curPage = 0
 
 while(not lastPage):
-    assets = asset_api.get_assets(size=size, page=curPage)
+    assets = None
+    if (site_id != None):
+        assets = site_api.get_site_assets(site_id, size=size, page=curPage)
+    else:
+        assets = asset_api.get_assets(size=size, page=curPage)
     if len(assets.resources) < size:
         lastPage = True
     for a in assets.resources:
