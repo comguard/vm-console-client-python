@@ -17,6 +17,7 @@ config = rapid7vmconsole.Configuration(name='Rapid7')
 config.username = ''
 config.password = ''
 config.host = '' # example - https://localhost:3780
+config.hostname = ''
 config.verify_ssl = False
 config.assert_hostname = False
 config.proxy = None
@@ -59,7 +60,6 @@ while(not lastPage):
         last_scanned_date = last_scanned_date.replace('Z', '')
         last_scanned_obj = datetime.strptime(last_scanned_date, '%y-%m-%d %H:%M:%S')
         asset_age = datetime.now() - last_scanned_obj
-        if asset_age.days > max_age:
-            print("Asset ID: %s; Hostname: %s; IP Address: %s; Last Scan: %s" % (a.id, a.host_name, a.ip, a.history[-1]._date))
-            asset_api.delete_asset(a.id)
+        if a.host_name.upper() == config.hostname.upper():
+            print(a)
     curPage += 1
