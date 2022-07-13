@@ -19,6 +19,7 @@ config.password = ''
 config.host = '' # example - https://localhost:3780
 config.verify_ssl = False
 config.assert_hostname = False
+config.ignore_scan_types = [''] # example - ['ASSET-IMPORT', 'SCAN']
 config.proxy = None
 config.ssl_ca_cert = None
 config.connection_pool_maxsize = None
@@ -55,11 +56,14 @@ while(not lastPage):
     if len(assets.resources) < size:
         lastPage = True
     for a in assets.resources:
-        last_scanned_date = a.history[-1]._date[2:].split('.', 1)[0].replace('T', ' ')
-        last_scanned_date = last_scanned_date.replace('Z', '')
-        last_scanned_obj = datetime.strptime(last_scanned_date, '%y-%m-%d %H:%M:%S')
-        asset_age = datetime.now() - last_scanned_obj
-        if asset_age.days > max_age:
-            print("Asset ID: %s; Hostname: %s; IP Address: %s; Last Scan: %s" % (a.id, a.host_name, a.ip, a.history[-1]._date))
-            asset_api.delete_asset(a.id)
+        for scan in reversed(a.history):
+            if (scan.type not in config.ignore_scan_types):
+                last_scanned_date = scan._date[2:].split('.', 1)[0].replace('T', ' ')
+                last_scanned_date = last_scanned_date.replace('Z', '')
+                last_scanned_obj = datetime.strptime(last_scanned_date, '%y-%m-%d %H:%M:%S')
+                asset_age = datetime.now() - last_scanned_obj
+                if asset_age.days > max_age:
+                    print("Asset ID: %s; Hostname: %s; IP Address: %s; Last Scan: %s" % (a.id, a.host_name, a.ip, a.history[-1]._date))
+                    asset_api.delete_asset(a.id)
+                break
     curPage += 1
