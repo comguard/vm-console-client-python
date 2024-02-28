@@ -66,3 +66,5 @@ target/
 # Added manually
 setup_workspace/*.jar
 .idea
+*.csv
+*.json
